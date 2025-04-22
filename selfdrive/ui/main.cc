@@ -9,6 +9,30 @@
 #include "selfdrive/ui/qt/util.h"
 #include "selfdrive/ui/qt/window.h"
 
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <cstring>
+
+void send_udp_test() {
+  int sock = socket(AF_INET, SOCK_DGRAM, 0);
+  if (sock < 0) return;
+
+  sockaddr_in addr;
+  memset(&addr, 0, sizeof(addr));
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons(8080);  // 수신 포트
+  inet_pton(AF_INET, "192.168.219.100", &addr.sin_addr);  // 패드 IP로 바꿔줘
+
+  const char* msg = "1234";
+  sendto(sock, msg, strlen(msg), 0, (sockaddr*)&addr, sizeof(addr));
+  close(sock);
+}
+
+
+
+
+
 int main(int argc, char *argv[]) {
   setpriority(PRIO_PROCESS, 0, -20);
 
@@ -29,6 +53,8 @@ int main(int argc, char *argv[]) {
 
   QApplication a(argc, argv);
   a.installTranslator(&translator);
+
+  send_udp_test();
 
   MainWindow w;
   setMainWindow(&w);
