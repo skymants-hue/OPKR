@@ -13,8 +13,11 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <cstring>
+#include <string.h>
+#include <thread>
+#include <chrono>
 
-void send_udp_test() {
+void send_tcp_test() {
   // 1) TCP용 소켓 생성
   int sock = socket(AF_INET, SOCK_STREAM, 0);
   if (sock < 0) return;
@@ -39,7 +42,14 @@ void send_udp_test() {
   close(sock);
 }
 
-
+void start_tcp_loop() {
+  std::thread([](){
+    while (true) {
+      send_tcp_test();  // TCP 연결 후 전송
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));  // 50:20Hz
+    }
+  }).detach();  // 백그라운드 실행
+}
 
 
 
@@ -64,7 +74,8 @@ int main(int argc, char *argv[]) {
   QApplication a(argc, argv);
   a.installTranslator(&translator);
 
-  send_udp_test();
+  //send_tcp_test();
+  start_tcp_loop();
 
   MainWindow w;
   setMainWindow(&w);
