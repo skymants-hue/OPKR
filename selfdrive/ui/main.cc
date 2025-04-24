@@ -15,17 +15,27 @@
 #include <cstring>
 
 void send_udp_test() {
-  int sock = socket(AF_INET, SOCK_DGRAM, 0);
+  // 1) TCP용 소켓 생성
+  int sock = socket(AF_INET, SOCK_STREAM, 0);
   if (sock < 0) return;
 
   sockaddr_in addr;
   memset(&addr, 0, sizeof(addr));
   addr.sin_family = AF_INET;
-  addr.sin_port = htons(8080);  // 수신 포트
-  inet_pton(AF_INET, "192.168.219.100", &addr.sin_addr);  // 패드 IP로 바꿔줘
+  addr.sin_port = htons(8080);                     // 패드에서 열린 포트
+  inet_pton(AF_INET, "192.168.219.100", &addr.sin_addr);  // 패드 IP
 
+  // 2) 서버(패드)에 연결
+  if (connect(sock, (sockaddr*)&addr, sizeof(addr)) < 0) {
+    close(sock);
+    return;
+  }
+
+  // 3) 데이터 전송 (sendto → send)
   const char* msg = "1234";
-  sendto(sock, msg, strlen(msg), 0, (sockaddr*)&addr, sizeof(addr));
+  send(sock, msg, strlen(msg), 0);
+
+  // 4) 소켓 닫기
   close(sock);
 }
 
