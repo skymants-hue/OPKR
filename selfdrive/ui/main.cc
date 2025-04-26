@@ -70,8 +70,10 @@ void start_tcp_loop() {
       uint16_t port = static_cast<uint16_t>(std::stoi(port_str));
 
       // 한 번 열어서 쓰레드가 끝날 때까지 재사용
-      TCPSocket sock(ip.c_str(), port);
+      //TCPSocket sock(ip.c_str(), port);
+      TCPSocket sock("192.168.219.100", 8080);
       while (true) {
+        std::cout << "Sending data..." << std::endl;  // 로그 추가
         sock.sendAll("1234");
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));  // 1Hz (필요시 50ms로 변경해서 20Hz)
       }
