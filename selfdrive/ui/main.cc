@@ -64,10 +64,10 @@ void start_tcp_loop() {
       // Params 객체 생성
       Params params;
       // IP 문자열, 포트 문자열 읽어오기
-      std::string ip       = params.get("ExternalPadIP");
-      std::string port_str = params.get("ExternalPadPort");
+      //std::string ip       = params.get("ExternalPadIP");
+      //std::string port_str = params.get("ExternalPadPort");
       // 문자열을 정수로 변환
-      uint16_t port = static_cast<uint16_t>(std::stoi(port_str));
+      //uint16_t port = static_cast<uint16_t>(std::stoi(port_str));
 
       // 한 번 열어서 쓰레드가 끝날 때까지 재사용
       //TCPSocket sock(ip.c_str(), port);
