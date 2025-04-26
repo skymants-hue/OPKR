@@ -16,41 +16,71 @@
 #include <string.h>
 #include <thread>
 #include <chrono>
+#include "selfdrive/common/params.h"
+#include <iostream>
+#include <netinet/in.h>
 
-void send_tcp_test() {
-  // 1) TCP용 소켓 생성
-  int sock = socket(AF_INET, SOCK_STREAM, 0);
-  if (sock < 0) return;
-
-  sockaddr_in addr;
-  memset(&addr, 0, sizeof(addr));
-  addr.sin_family = AF_INET;
-  addr.sin_port = htons(8080);                     // 패드에서 열린 포트
-  inet_pton(AF_INET, "192.168.219.100", &addr.sin_addr);  // 패드 IP
-
-  // 2) 서버(패드)에 연결
-  if (connect(sock, (sockaddr*)&addr, sizeof(addr)) < 0) {
-    close(sock);
-    return;
-  }
-
-  // 3) 데이터 전송 (sendto → send)
-  const char* msg = "1234";
-  send(sock, msg, strlen(msg), 0);
-
-  // 4) 소켓 닫기
-  close(sock);
-}
+class TCPSocket {
+  public:
+    TCPSocket(const char* ip, uint16_t port) {
+      fd = socket(AF_INET, SOCK_STREAM, 0);
+      if (fd < 0) throw std::runtime_error("socket() failed");
+  
+      sockaddr_in addr{};
+      addr.sin_family = AF_INET;
+      addr.sin_port   = htons(port);
+      if (inet_pton(AF_INET, ip, &addr.sin_addr) <= 0) {
+        ::close(fd);
+        throw std::runtime_error("inet_pton() failed");
+      }
+  
+      if (connect(fd, (sockaddr*)&addr, sizeof(addr)) < 0) {
+        ::close(fd);
+        throw std::runtime_error(std::string("connect() failed: ") + strerror(errno));
+      }
+    }
+  
+    ~TCPSocket() {
+      if (fd >= 0) ::close(fd);
+    }
+  
+    // send all bytes safely
+    void sendAll(const std::string &data) {
+      size_t total = 0, len = data.size();
+      while (total < len) {
+        ssize_t n = ::send(fd, data.data() + total, len - total, MSG_NOSIGNAL);
+        if (n <= 0) throw std::runtime_error("send() failed");
+        total += n;
+      }
+    }
+  
+  private:
+    int fd{-1};
+};
 
 void start_tcp_loop() {
   std::thread([](){
-    while (true) {
-      send_tcp_test();  // TCP 연결 후 전송
-      std::this_thread::sleep_for(std::chrono::milliseconds(1000));  // 50:20Hz
-    }
-  }).detach();  // 백그라운드 실행
-}
+    try {
+      // Params 객체 생성
+      Params params;
+      // IP 문자열, 포트 문자열 읽어오기
+      std::string ip       = params.get("ExternalPadIP");
+      std::string port_str = params.get("ExternalPadPort");
+      // 문자열을 정수로 변환
+      uint16_t port = static_cast<uint16_t>(std::stoi(port_str));
 
+      // 한 번 열어서 쓰레드가 끝날 때까지 재사용
+      TCPSocket sock(ip.c_str(), port);
+      while (true) {
+        sock.sendAll("1234");
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));  // 1Hz (필요시 50ms로 변경해서 20Hz)
+      }
+    } catch (const std::exception &e) {
+      std::cerr << "TCP loop error: " << e.what() << std::endl;
+      // (필요하다면 재시도 로직 추가)
+    }
+  }).detach();
+}
 
 
 int main(int argc, char *argv[]) {

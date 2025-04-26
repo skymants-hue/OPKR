@@ -8170,6 +8170,84 @@ void ExternalDeviceIP::refresh() {
   edit.setText(QString::fromStdString(strs.toStdString()));
 }
 
+ExternalPadIP::ExternalPadIP() : AbstractControl(tr("ExternalPadIP"), tr("Set Your External Pad IP."), "") {
+  btn.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+  )");
+  edit.setStyleSheet(R"(
+    background-color: grey;
+    font-size: 55px;
+    font-weight: 500;
+    height: 120px;
+  )");
+
+  btn.setFixedSize(150, 100);
+  btn.setText(tr("SET"));
+  edit.setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
+
+  hlayout->addWidget(&edit);
+  hlayout->addWidget(&btn);
+
+
+  QObject::connect(&btn, &QPushButton::clicked, [=]() {
+    QString eip_address = InputDialog::getText(tr("Input Your External Pad IP"), this, tr(" "), false, 1, QString::fromStdString(params.get("ExternalPadIP")));
+    if (eip_address.length() > 0) {
+      params.put("ExternalPadIP", eip_address.toStdString());
+    }
+    refresh();
+  });
+  refresh();
+}
+
+void ExternalPadIP::refresh() {
+  auto strs = QString::fromStdString(params.get("ExternalPadIP"));
+  edit.setText(QString::fromStdString(strs.toStdString()));
+}
+
+ExternalPadPort::ExternalPadPort() : AbstractControl(tr("ExternalPadPort"), tr("Set Your External Pad Open Port."), "") {
+  btn.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+  )");
+  edit.setStyleSheet(R"(
+    background-color: grey;
+    font-size: 55px;
+    font-weight: 500;
+    height: 120px;
+  )");
+
+  btn.setFixedSize(150, 100);
+  btn.setText(tr("SET"));
+  edit.setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
+
+  hlayout->addWidget(&edit);
+  hlayout->addWidget(&btn);
+
+
+  QObject::connect(&btn, &QPushButton::clicked, [=]() {
+    QString eip_address = InputDialog::getText(tr("Input Your External Pad Open Port"), this, tr(" "), false, 1, QString::fromStdString(params.get("ExternalPadPort")));
+    if (eip_address.length() > 0) {
+      params.put("ExternalPadPort", eip_address.toStdString());
+    }
+    refresh();
+  });
+  refresh();
+}
+
+void ExternalPadPort::refresh() {
+  auto strs = QString::fromStdString(params.get("ExternalPadPort"));
+  edit.setText(QString::fromStdString(strs.toStdString()));
+}
+
 DoNotDisturbMode::DoNotDisturbMode() : AbstractControl(tr("DoNotDisturb Mode"), tr("Off Event notification, Screen and Sound of Device. You can enable this touching Left-Top Box like a button on onroad screen."), "../assets/offroad/icon_shell.png") {
 
   label.setAlignment(Qt::AlignVCenter|Qt::AlignRight);

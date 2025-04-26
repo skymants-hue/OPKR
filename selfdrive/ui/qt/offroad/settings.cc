@@ -493,6 +493,8 @@ UIPanel::UIPanel(QWidget *parent) : QFrame(parent) {
     }
   });
   layout->addWidget(realdatadelbtn);
+  layout->addWidget(new ExternalPadIP());
+  layout->addWidget(new ExternalPadPort());
   layout->addWidget(new MonitoringMode());
   layout->addWidget(new MonitorEyesThreshold());
   layout->addWidget(new NormalEyesThreshold());

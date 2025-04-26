@@ -4034,7 +4034,7 @@
     </message>
 </context>
 <context>
-    <name>ExternalDeviceIP</name>
+    <name></name>
     <message>
         <location filename="../qt/widgets/opkr.cc" line="8130"/>
         <source>ExternalDevIP</source>

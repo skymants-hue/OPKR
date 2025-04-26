@@ -387,6 +387,8 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"LanguageSetting", PERSISTENT},
     {"OPKRSpeedBump", PERSISTENT},
     {"OPKREarlyStop", PERSISTENT},
+    {"ExternalPadIP", PERSISTENT},
+    {"ExternalPadPort", PERSISTENT},
     {"ExternalDeviceIP", PERSISTENT},
     {"ExternalDeviceIPNow", CLEAR_ON_MANAGER_START},
     {"DoNotDisturbMode", PERSISTENT},

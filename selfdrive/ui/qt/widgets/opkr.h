@@ -2664,6 +2664,34 @@ private:
   void refresh();
 };
 
+class ExternalPadIP : public AbstractControl {
+  Q_OBJECT
+
+public:
+  ExternalPadIP();
+
+private:
+  QPushButton btn;
+  QLineEdit edit;
+  Params params;
+  
+  void refresh();
+};
+
+class ExternalPadPort : public AbstractControl {
+  Q_OBJECT
+
+public:
+  ExternalPadPort();
+
+private:
+  QPushButton btn;
+  QLineEdit edit;
+  Params params;
+  
+  void refresh();
+};
+
 class DoNotDisturbMode : public AbstractControl {
   Q_OBJECT
 
