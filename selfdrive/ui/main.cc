@@ -79,6 +79,7 @@ void start_tcp_loop() {
       }
     } catch (const std::exception &e) {
       std::cerr << "TCP loop error: " << e.what() << std::endl;
+      std::this_thread::sleep_for(std::chrono::seconds(1));
       // (필요하다면 재시도 로직 추가)
     }
   }).detach();
