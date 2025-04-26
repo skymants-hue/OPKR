@@ -60,30 +60,31 @@ class TCPSocket {
 
 void start_tcp_loop() {
   std::thread([](){
-    try {
-      // Params 객체 생성
-      Params params;
-      // IP 문자열, 포트 문자열 읽어오기
-      std::string ip       = params.get("ExternalPadIP");
-      std::string port_str = params.get("ExternalPadPort");
-      // 문자열을 정수로 변환
-      uint16_t port = static_cast<uint16_t>(std::stoi(port_str));
+    Params params;
+    std::string ip = params.get("ExternalPadIP");
+    std::string port_str = params.get("ExternalPadPort");
+    uint16_t port = static_cast<uint16_t>(std::stoi(port_str));
 
-      // 한 번 열어서 쓰레드가 끝날 때까지 재사용
-      TCPSocket sock(ip.c_str(), port);
-      //TCPSocket sock("192.168.219.100", 8080);
-      while (true) {
-        std::cout << "Sending data..." << std::endl;  // 로그 추가
-        sock.sendAll("1234\n");
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));  // 1Hz (필요시 50ms로 변경해서 20Hz)
+    while (true) {  // 제일 바깥에 무한 루프
+      try {
+        TCPSocket sock(ip.c_str(), port);
+        std::cout << "Connected to " << ip << ":" << port << std::endl;
+
+        while (true) {  // 소켓이 살아 있는 동안
+          std::cout << "Sending data..." << std::endl;
+          sock.sendAll("1234\n");
+          std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        }
+
+      } catch (const std::exception &e) {
+        std::cerr << "TCP loop error: " << e.what() << std::endl;
+        // 여기서 재시도하려면 잠깐 쉬어야 해
+        std::this_thread::sleep_for(std::chrono::seconds(1));
       }
-    } catch (const std::exception &e) {
-      std::cerr << "TCP loop error: " << e.what() << std::endl;
-      std::this_thread::sleep_for(std::chrono::seconds(1));
-      // (필요하다면 재시도 로직 추가)
     }
   }).detach();
 }
+
 
 
 int main(int argc, char *argv[]) {
