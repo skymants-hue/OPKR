@@ -10,6 +10,8 @@
 #include "selfdrive/common/watchdog.h"
 #include "selfdrive/hardware/hw.h"
 
+#include "selfdrive/ui/globalmsgcom.h"
+
 #define BACKLIGHT_DT 0.05
 #define BACKLIGHT_TS 10.00
 #define BACKLIGHT_OFFROAD 50
@@ -295,6 +297,10 @@ static void update_state(UIState *s) {
     scene.ambientTemp = scene.deviceState.getAmbientTempC();
     scene.fanSpeed = scene.deviceState.getFanSpeedPercentDesired();
     scene.batPercent = scene.deviceState.getBatteryPercent();
+
+    msgcom[4]=float(scene.cpuPerc);
+    msgcom[5]=scene.cpuTemp;
+    msgcom[6]=scene.ambientTemp;
   }
   if (sm.updated("pandaStates")) {
     auto pandaStates = sm["pandaStates"].getPandaStates();

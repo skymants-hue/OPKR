@@ -19,71 +19,83 @@
 #include "selfdrive/common/params.h"
 #include <iostream>
 #include <netinet/in.h>
+#include "selfdrive/ui/globalmsgcom.h"
 
 class TCPSocket {
   public:
-    TCPSocket(const char* ip, uint16_t port) {
-      fd = socket(AF_INET, SOCK_STREAM, 0);
-      if (fd < 0) throw std::runtime_error("socket() failed");
+      TCPSocket(const char* ip, uint16_t port) {
+          fd = ::socket(AF_INET, SOCK_STREAM, 0);
+          if (fd < 0) throw std::runtime_error("socket() failed");
   
-      sockaddr_in addr{};
-      addr.sin_family = AF_INET;
-      addr.sin_port   = htons(port);
-      if (inet_pton(AF_INET, ip, &addr.sin_addr) <= 0) {
-        ::close(fd);
-        throw std::runtime_error("inet_pton() failed");
+          sockaddr_in addr{};
+          addr.sin_family = AF_INET;
+          addr.sin_port   = htons(port);
+          if (::inet_pton(AF_INET, ip, &addr.sin_addr) <= 0) {
+              ::close(fd);
+              throw std::runtime_error("inet_pton() failed");
+          }
+  
+          if (::connect(fd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0) {
+              ::close(fd);
+              throw std::runtime_error(std::string("connect() failed: ") + std::strerror(errno));
+          }
       }
   
-      if (connect(fd, (sockaddr*)&addr, sizeof(addr)) < 0) {
-        ::close(fd);
-        throw std::runtime_error(std::string("connect() failed: ") + strerror(errno));
+      ~TCPSocket() {
+          if (fd >= 0) ::close(fd);
       }
-    }
   
-    ~TCPSocket() {
-      if (fd >= 0) ::close(fd);
-    }
-  
-    // send all bytes safely
-    void sendAll(const std::string &data) {
-      size_t total = 0, len = data.size();
-      while (total < len) {
-        ssize_t n = ::send(fd, data.data() + total, len - total, MSG_NOSIGNAL);
-        if (n <= 0) throw std::runtime_error("send() failed");
-        total += n;
+      // 바이너리 데이터 전송용
+      void sendAll(const void* data, size_t len) {
+          size_t total = 0;
+          const char* ptr = reinterpret_cast<const char*>(data);
+          while (total < len) {
+              ssize_t n = ::send(fd, ptr + total, len - total, MSG_NOSIGNAL);
+              if (n <= 0) throw std::runtime_error("send() failed");
+              total += n;
+          }
       }
-    }
+  
+      // 문자열 전송용 (internally uses binary send)
+      void sendAll(const std::string &data) {
+          sendAll(data.data(), data.size());
+      }
   
   private:
-    int fd{-1};
+      int fd{-1};
 };
-
+  
 void start_tcp_loop() {
   std::thread([](){
-    Params params;
-    std::string ip = params.get("ExternalPadIP");
-    std::string port_str = params.get("ExternalPadPort");
-    uint16_t port = static_cast<uint16_t>(std::stoi(port_str));
-
-    while (true) {  // 제일 바깥에 무한 루프
-      try {
-        TCPSocket sock(ip.c_str(), port);
-        std::cout << "Connected to " << ip << ":" << port << std::endl;
-
-        while (true) {  // 소켓이 살아 있는 동안
-          std::cout << "Sending data..." << std::endl;
-          sock.sendAll("1234\n");
-          std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        }
-
-      } catch (const std::exception &e) {
-        std::cerr << "TCP loop error: " << e.what() << std::endl;
-        // 여기서 재시도하려면 잠깐 쉬어야 해
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-      }
-    }
-  }).detach();
+          Params params;
+          std::string ip = params.get("ExternalPadIP");
+          std::string port_str = params.get("ExternalPadPort");
+          uint16_t port = static_cast<uint16_t>(std::stoi(port_str));
+  
+          while (true) {  // 재연결 로직
+              try {
+                  TCPSocket sock(ip.c_str(), port);
+                  std::cout << "Connected to " << ip << ":" << port << std::endl;
+  
+                  while (true) {  // 소켓 연결 유지 중 데이터 전송
+                      std::cout << "Sending data..." << std::endl;
+  
+                      // float 배열을 바이너리로 한 덩어리 전송
+                      sock.sendAll(msgcom, sizeof(msgcom));
+                      // 끝 표시로 "\n" 전송
+                      sock.sendAll("\n", 1);
+  
+                      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                  }
+  
+              } catch (const std::exception &e) {
+                  std::cerr << "TCP loop error: " << e.what() << std::endl;
+                  std::this_thread::sleep_for(std::chrono::seconds(1));
+              }
+          }
+   }).detach();
 }
+
 
 
 
