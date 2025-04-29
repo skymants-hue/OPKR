@@ -24,6 +24,7 @@
 #include "selfdrive/ui/dashcam.h"
 
 #include "selfdrive/ui/globalmsgcom.h"
+#include <algorithm>
 
 static void ui_print(UIState *s, int x, int y,  const char* fmt, ... )
 {
@@ -681,6 +682,72 @@ static void ui_draw_vision_cruise_speed(UIState *s) {
   }
 }
 
+// Fit cubic y = ax^3 + bx^2 + cx + d to given vertex_data points
+CubicCoeffs fitCubicPolynomial(const line_vertices_data& data) {
+  int n = data.cnt;
+  if (n < 4) return {0.0f, 0.0f, 0.0f, 0.0f};
+
+  double S0 = n;
+  double S1 = 0, S2 = 0, S3 = 0, S4 = 0, S5 = 0, S6 = 0;
+  double T0 = 0, T1 = 0, T2 = 0, T3 = 0;
+
+  for (int i = 0; i < n; ++i) {
+    double x = data.v[i].x;
+    double y = data.v[i].y;
+    double x2 = x * x;
+    double x3 = x2 * x;
+    double x4 = x3 * x;
+    double x5 = x4 * x;
+    double x6 = x5 * x;
+
+    S1 += x;
+    S2 += x2;
+    S3 += x3;
+    S4 += x4;
+    S5 += x5;
+    S6 += x6;
+
+    T0 += y;
+    T1 += x * y;
+    T2 += x2 * y;
+    T3 += x3 * y;
+  }
+
+  double m[4][5] = {
+    { S6, S5, S4, S3, T3 },
+    { S5, S4, S3, S2, T2 },
+    { S4, S3, S2, S1, T1 },
+    { S3, S2, S1, S0, T0 }
+  };
+
+  for (int i = 0; i < 4; ++i) {
+    int maxRow = i;
+    for (int k = i + 1; k < 4; ++k) {
+      if (fabs(m[k][i]) > fabs(m[maxRow][i])) maxRow = k;
+    }
+    for (int j = 0; j < 5; ++j) std::swap(m[i][j], m[maxRow][j]);
+    double pivot = m[i][i];
+    if (fabs(pivot) < 1e-12) continue;
+    for (int j = i; j < 5; ++j) m[i][j] /= pivot;
+    for (int k = 0; k < 4; ++k) {
+      if (k == i) continue;
+      double factor = m[k][i];
+      for (int j = i; j < 5; ++j) {
+        m[k][j] -= factor * m[i][j];
+      }
+    }
+  }
+
+  return { (float)m[0][4], (float)m[1][4], (float)m[2][4], (float)m[3][4] };
+}
+
+// 사용 예시:
+// line_vertices_data track = scene.track_vertices;
+// CubicCoeffs coeffs = fitCubicPolynomial(track);
+// coeffs.a, coeffs.b, coeffs.c, coeffs.d;
+
+
+
 static void ui_draw_vision_speed(UIState *s) {
   const float speed = std::max(0.0, (*s->sm)["carState"].getCarState().getVEgo()*(s->scene.is_metric ? 3.6 : 2.2369363));
   const std::string speed_str = std::to_string((int)std::nearbyint(speed));
@@ -724,7 +791,86 @@ static void ui_draw_vision_speed(UIState *s) {
   msgcom[40]=float(scene.ctrl_speed);
   msgcom[41]=float(round(scene.controls_state.getVCruise()));
   msgcom[42]=float(scene.getGearShifter);
-  //msgcom[43]=float();
+  msgcom[43]=float(scene.cruise_gap);
+  msgcom[44]=float(scene.dm_active);
+  //msgcom[45]=float()
+
+  msgcom[70]=float(scene.lane_blindspot_probs[0]);
+  msgcom[71]=float(scene.lane_blindspot_probs[1]);
+  msgcom[72]=float(scene.lane_line_probs[0]);
+  msgcom[73]=float(scene.lane_line_probs[1]);
+  msgcom[74]=float(scene.lane_line_probs[2]);
+  msgcom[75]=float(scene.lane_line_probs[3]);
+
+  msgcom[77]=float(scene.road_edge_stds[0]);
+  msgcom[78]=float(scene.road_edge_stds[1]);
+
+  // Fit cubic y = ax^3 + bx^2 + cx + d to given vertex_data points
+  CubicCoeffs coeffs_track_vertices = fitCubicPolynomial(scene.track_vertices);
+  msgcom[80]=float(coeffs_track_vertices.a);
+  msgcom[81]=float(coeffs_track_vertices.b);
+  msgcom[82]=float(coeffs_track_vertices.c);
+  msgcom[83]=float(coeffs_track_vertices.d);
+
+  CubicCoeffs coeffs_lane_line_vertices_0 = fitCubicPolynomial(scene.lane_line_vertices[0]);
+  msgcom[86]=float(coeffs_lane_line_vertices_0.a);
+  msgcom[87]=float(coeffs_lane_line_vertices_0.b);
+  msgcom[88]=float(coeffs_lane_line_vertices_0.c);
+  msgcom[89]=float(coeffs_lane_line_vertices_0.d);
+
+  CubicCoeffs coeffs_lane_line_vertices_1 = fitCubicPolynomial(scene.lane_line_vertices[1]);
+  msgcom[90]=float(coeffs_lane_line_vertices_1.a);
+  msgcom[91]=float(coeffs_lane_line_vertices_1.b);
+  msgcom[92]=float(coeffs_lane_line_vertices_1.c);
+  msgcom[93]=float(coeffs_lane_line_vertices_1.d);
+
+  CubicCoeffs coeffs_lane_line_vertices_2 = fitCubicPolynomial(scene.lane_line_vertices[2]);
+  msgcom[94]=float(coeffs_lane_line_vertices_2.a);
+  msgcom[95]=float(coeffs_lane_line_vertices_2.b);
+  msgcom[96]=float(coeffs_lane_line_vertices_2.c);
+  msgcom[97]=float(coeffs_lane_line_vertices_2.d);
+
+  CubicCoeffs coeffs_lane_line_vertices_3 = fitCubicPolynomial(scene.lane_line_vertices[3]);
+  msgcom[98]=float(coeffs_lane_line_vertices_3.a);
+  msgcom[99]=float(coeffs_lane_line_vertices_3.b);
+  msgcom[100]=float(coeffs_lane_line_vertices_3.c);
+  msgcom[101]=float(coeffs_lane_line_vertices_3.d);
+
+  CubicCoeffs coeffs_road_edge_vertices_0 = fitCubicPolynomial(scene.road_edge_vertices[0]);
+  msgcom[103]=float(coeffs_road_edge_vertices_0.a);
+  msgcom[104]=float(coeffs_road_edge_vertices_0.b);
+  msgcom[105]=float(coeffs_road_edge_vertices_0.c);
+  msgcom[106]=float(coeffs_road_edge_vertices_0.d);
+
+  CubicCoeffs coeffs_road_edge_vertices_1 = fitCubicPolynomial(scene.road_edge_vertices[1]);
+  msgcom[107]=float(coeffs_road_edge_vertices_1.a);
+  msgcom[108]=float(coeffs_road_edge_vertices_1.b);
+  msgcom[109]=float(coeffs_road_edge_vertices_1.c);
+  msgcom[110]=float(coeffs_road_edge_vertices_1.d);
+
+  CubicCoeffs coeffs_lane_blindspot_vertices_0 = fitCubicPolynomial(scene.lane_blindspot_vertices[0]);
+  msgcom[112]=float(coeffs_lane_blindspot_vertices_0.a);
+  msgcom[113]=float(coeffs_lane_blindspot_vertices_0.b);
+  msgcom[114]=float(coeffs_lane_blindspot_vertices_0.c);
+  msgcom[115]=float(coeffs_lane_blindspot_vertices_0.d);
+
+  CubicCoeffs coeffs_lane_blindspot_vertices_1 = fitCubicPolynomial(scene.lane_blindspot_vertices[1]);
+  msgcom[116]=float(coeffs_lane_blindspot_vertices_1.a);
+  msgcom[117]=float(coeffs_lane_blindspot_vertices_1.b);
+  msgcom[118]=float(coeffs_lane_blindspot_vertices_1.c);
+  msgcom[119]=float(coeffs_lane_blindspot_vertices_1.d);
+
+  CubicCoeffs coeffs_stop_line_vertices = fitCubicPolynomial(scene.stop_line_vertices);
+  msgcom[121]=float(coeffs_stop_line_vertices.a);
+  msgcom[122]=float(coeffs_stop_line_vertices.b);
+  msgcom[123]=float(coeffs_stop_line_vertices.c);
+  msgcom[124]=float(coeffs_stop_line_vertices.d);
+
+  msgcom[126]=float(scene.lead_vertices[0].x);
+  msgcom[127]=float(scene.lead_vertices[0].y);
+  msgcom[128]=float(scene.lead_vertices[1].x);
+  msgcom[129]=float(scene.lead_vertices[1].y);
+
 
   //msgcom[]=float(scene.);
 

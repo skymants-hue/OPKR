@@ -136,6 +136,16 @@ typedef struct {
   int cnt;
 } line_vertices_data;
 
+typedef struct {
+  float a;
+  float b;
+  float c;
+  float d;
+} CubicCoeffs;
+
+CubicCoeffs fitCubicPolynomial(const line_vertices_data& data);
+
+
 typedef struct UIScene {
 
   mat3 view_from_calib;
