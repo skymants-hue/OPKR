@@ -23,6 +23,8 @@
 #include <time.h> // opkr
 #include "selfdrive/ui/dashcam.h"
 
+#include "selfdrive/ui/globalmsgcom.h"
+
 static void ui_print(UIState *s, int x, int y,  const char* fmt, ... )
 {
   char* msg_buf = NULL;
@@ -686,6 +688,47 @@ static void ui_draw_vision_speed(UIState *s) {
   const int viz_speed_w = 250;
   const int viz_speed_x = s->fb_w/2 - viz_speed_w/2;
   const int header_h2 = 400;
+
+  msgcom[8]=speed;
+  msgcom[9]=float(scene.leftblindspot);
+  msgcom[10]=float(scene.rightblindspot);
+  msgcom[11]=float(scene.leftBlinker);
+  msgcom[12]=float(scene.rightBlinker);
+  msgcom[13]=float(scene.angleSteers);
+  msgcom[14]=float(scene.gap_by_speed_on);
+  msgcom[15]=float(scene.brakeLights);
+  msgcom[16]=float(scene.steerOverride);
+  msgcom[17]=float(scene.tpmsUnit);
+  msgcom[18]=float(scene.tpmsPressureFl);
+  msgcom[19]=float(scene.tpmsPressureFr);
+  msgcom[20]=float(scene.tpmsPressureRl);
+  msgcom[21]=float(scene.tpmsPressureRr);
+  msgcom[22]=float(scene.radarDistance);
+  msgcom[23]=float(scene.limitSpeedCamera);
+  msgcom[24]=float(scene.limitSpeedCameraDist);
+  msgcom[25]=float(scene.mapSign);
+  msgcom[26]=float(scene.mapSignCam);
+  msgcom[27]=float(scene.vSetDis);
+  msgcom[28]=float(scene.cruiseAccStatus);
+  msgcom[29]=float(scene.driverAcc);
+  msgcom[30]=float(scene.laneless_mode);
+  msgcom[31]=float(scene.top_text_view);
+  msgcom[32]=float(scene.is_speed_over_limit);
+  msgcom[33]=float(scene.controlAllowed);
+  msgcom[34]=float(scene.steer_warning);
+  msgcom[35]=float(scene.stand_still);
+  msgcom[36]=float(scene.show_error);
+  msgcom[37]=float(scene.display_maxspeed_time);
+  msgcom[38]=float(scene.speedlimit_signtype);
+  msgcom[39]=float(scene.engine_rpm);
+  msgcom[40]=float(scene.ctrl_speed);
+  msgcom[41]=float(round(scene.controls_state.getVCruise()));
+  msgcom[42]=float(scene.getGearShifter);
+  //msgcom[43]=float();
+
+  //msgcom[]=float(scene.);
+
+
 
   // turning blinker from kegman, moving signal by OPKR
   if (scene.leftBlinker && scene.comma_stock_ui != 1) {

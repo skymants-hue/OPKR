@@ -301,7 +301,7 @@ static void update_state(UIState *s) {
     msgcom[4]=float(scene.cpuPerc);
     msgcom[5]=scene.cpuTemp;
     msgcom[6]=scene.ambientTemp;
-    msgcom[7]=7.0f;
+    msgcom[7]=float(scene.fanSpeed);
   }
   if (sm.updated("pandaStates")) {
     auto pandaStates = sm["pandaStates"].getPandaStates();
