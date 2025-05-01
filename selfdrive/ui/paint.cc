@@ -795,6 +795,8 @@ static void ui_draw_vision_speed(UIState *s) {
   msgcom[44]=float(scene.dm_active);
   msgcom[45]=float(scene.car_state.getSeatbeltUnlatched());
 
+  msgcom[51]=float(scene.brakeHold);
+
   msgcom[70]=float(scene.lane_blindspot_probs[0]);
   msgcom[71]=float(scene.lane_blindspot_probs[1]);
   msgcom[72]=float(scene.lane_line_probs[0]);
