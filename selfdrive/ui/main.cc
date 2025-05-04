@@ -78,7 +78,7 @@ void start_udp_loop() {
                 sock.sendTo(msgcom, sizeof(msgcom));
                 sock.sendTo("\n", 1);  // 끝 표시
 
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));  // 조정 가능
+                std::this_thread::sleep_for(std::chrono::milliseconds(30));  // 조정 가능
             }
 
         } catch (const std::exception &e) {
