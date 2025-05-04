@@ -88,7 +88,7 @@ void start_tcp_loop() {
                       // 끝 표시로 "\n" 전송
                       sock.sendAll("\n", 1);
   
-                      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                      std::this_thread::sleep_for(std::chrono::milliseconds(10));
                   }
   
               } catch (const std::exception &e) {
