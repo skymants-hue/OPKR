@@ -93,7 +93,7 @@ void start_udp_loop() {
                     lastSent = now;
                 }
             
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                std::this_thread::sleep_for(std::chrono::milliseconds(30));
             }
 
         } catch (const std::exception &e) {
