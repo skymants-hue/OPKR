@@ -70,6 +70,9 @@ void start_tcp_loop() {
           Params params;
           std::string ip = params.get("ExternalPadIP");
           std::string port_str = params.get("ExternalPadPort");
+          // 기본값 설정
+          if (ip.empty()) ip = "192.168.41.127";
+          if (port_str.empty()) port_str = "8080";
           uint16_t port = static_cast<uint16_t>(std::stoi(port_str));
   
           while (true) {  // 재연결 로직
