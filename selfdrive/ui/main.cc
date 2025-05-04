@@ -87,13 +87,13 @@ void start_udp_loop() {
                 auto now = std::chrono::steady_clock::now();
                 auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastSent).count();
             
-                if (elapsed >= 30) {
+                if (elapsed >= 100) {
                     sock.sendTo(msgcom, sizeof(msgcom));
                     sock.sendTo("\n", 1);
                     lastSent = now;
                 }
             
-                std::this_thread::sleep_for(std::chrono::milliseconds(30));
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
             }
 
         } catch (const std::exception &e) {
