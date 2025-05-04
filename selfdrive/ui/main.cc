@@ -21,6 +21,73 @@
 #include <netinet/in.h>
 #include "selfdrive/ui/globalmsgcom.h"
 
+#include <stdexcept>
+#include <string>
+
+
+class UDPSocket {
+    public:
+        UDPSocket(const char* ip, uint16_t port) {
+            fd = ::socket(AF_INET, SOCK_DGRAM, 0);
+            if (fd < 0) throw std::runtime_error("socket() failed");
+    
+            addr.sin_family = AF_INET;
+            addr.sin_port = htons(port);
+            if (::inet_pton(AF_INET, ip, &addr.sin_addr) <= 0) {
+                ::close(fd);
+                throw std::runtime_error("inet_pton() failed");
+            }
+        }
+    
+        ~UDPSocket() {
+            if (fd >= 0) ::close(fd);
+        }
+    
+        void sendTo(const void* data, size_t len) {
+            ssize_t n = ::sendto(fd, data, len, 0,
+                                 reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
+            if (n < 0) throw std::runtime_error("sendto() failed");
+        }
+    
+        void sendTo(const std::string &data) {
+            sendTo(data.data(), data.size());
+        }
+    
+    private:
+        int fd{-1};
+        sockaddr_in addr{};
+};
+
+void start_udp_loop() {
+    std::thread([]() {
+        Params params;
+        std::string ip = params.get("ExternalPadIP");
+        std::string port_str = params.get("ExternalPadPort");
+
+        // 기본값 설정
+        if (ip.empty()) ip = "192.168.41.127";
+        if (port_str.empty()) port_str = "8080";
+        uint16_t port = static_cast<uint16_t>(std::stoi(port_str));
+
+        try {
+            UDPSocket sock(ip.c_str(), port);
+            std::cout << "UDP target: " << ip << ":" << port << std::endl;
+
+            while (true) {
+                std::cout << "Sending UDP data..." << std::endl;
+                sock.sendTo(msgcom, sizeof(msgcom));
+                sock.sendTo("\n", 1);  // 끝 표시
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));  // 조정 가능
+            }
+
+        } catch (const std::exception &e) {
+            std::cerr << "UDP error: " << e.what() << std::endl;
+        }
+    }).detach();
+}
+
+/*
 class TCPSocket {
   public:
       TCPSocket(const char* ip, uint16_t port) {
@@ -98,7 +165,7 @@ void start_tcp_loop() {
           }
    }).detach();
 }
-
+*/
 
 
 
@@ -124,7 +191,7 @@ int main(int argc, char *argv[]) {
   a.installTranslator(&translator);
 
   //send_tcp_test();
-  start_tcp_loop();
+  start_udp_loop();
 
   MainWindow w;
   setMainWindow(&w);
