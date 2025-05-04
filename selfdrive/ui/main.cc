@@ -72,13 +72,28 @@ void start_udp_loop() {
         try {
             UDPSocket sock(ip.c_str(), port);
             std::cout << "UDP target: " << ip << ":" << port << std::endl;
+            auto lastSent = std::chrono::steady_clock::now();
 
+            /*
             while (true) {
                 std::cout << "Sending UDP data..." << std::endl;
                 sock.sendTo(msgcom, sizeof(msgcom));
                 sock.sendTo("\n", 1);  // 끝 표시
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(30));  // 조정 가능
+            }
+            */
+            while (true) {
+                auto now = std::chrono::steady_clock::now();
+                auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastSent).count();
+            
+                if (elapsed >= 30) {
+                    sock.sendTo(msgcom, sizeof(msgcom));
+                    sock.sendTo("\n", 1);
+                    lastSent = now;
+                }
+            
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
 
         } catch (const std::exception &e) {
