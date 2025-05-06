@@ -1,2 +1,2 @@
 #pragma once
-inline float msgcom[850]= { 0 };
+inline float msgcom[300]= { 0 };
