@@ -755,7 +755,7 @@ static void ui_draw_vision_speed(UIState *s) {
 
   for (int n = 0; n < 4; n++) {
     int base = 204 + n * 134;  // 204, 338, 472, 606
-    msgcom[base] = scene.lane_line_vertices[n].cnt;
+    msgcom[base] = float(scene.lane_line_vertices[n].cnt);
     for (int i = 0; i < scene.lane_line_vertices[n].cnt; i++) {
       msgcom[base + 1 + i * 2]     = scene.lane_line_vertices[n].v[i].x;
       msgcom[base + 1 + i * 2 + 1] = scene.lane_line_vertices[n].v[i].y;
