@@ -753,7 +753,7 @@ static void ui_draw_vision_speed(UIState *s) {
     msgcom[71+i*2+1]=float(scene.track_vertices.v[i].y);
   }
 
-  /*
+  
   for (int n = 0; n < 4; n++) {
     int base = 204 + n * 134;  // 204, 338, 472, 606
     msgcom[base] = float(scene.lane_line_vertices[n].cnt);
@@ -761,7 +761,7 @@ static void ui_draw_vision_speed(UIState *s) {
       msgcom[base + 1 + i * 2]     = scene.lane_line_vertices[n].v[i].x;
       msgcom[base + 1 + i * 2 + 1] = scene.lane_line_vertices[n].v[i].y;
     }
-  }*/
+  }
   //msgcom[739]까지 데이타 받고 있음
 
   
