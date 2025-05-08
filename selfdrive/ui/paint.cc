@@ -258,9 +258,15 @@ static void ui_draw_world(UIState *s) {
     auto lead_two = (*s->sm)["radarState"].getRadarState().getLeadTwo();
     if (lead_one.getStatus()) {
       draw_lead(s, lead_one, s->scene.lead_vertices[0]);
+      msgcom[58]=float(lead_one.getStatus())
+      msgcom[60]=float(lead_one.getYRel())
+      msgcom[61]=float(lead_one.getDRel())
     }
     if (lead_two.getStatus() && (std::abs(lead_one.getDRel() - lead_two.getDRel()) > 3.0)) {
       draw_lead(s, lead_two, s->scene.lead_vertices[1]);
+      msgcom[59]=float(lead_two.getStatus())
+      msgcom[62]=float(lead_two.getYRel())
+      msgcom[63]=float(lead_two.getDRel())
     }
     if (s->scene.stop_line && s->scene.longitudinalPlan.stopline[12] > 3.0) {
       auto stop_line = (*s->sm)["modelV2"].getModelV2().getStopLine();
@@ -736,10 +742,7 @@ static void ui_draw_vision_speed(UIState *s) {
   msgcom[51]=float(scene.brakeHold);
 
 
-  msgcom[60]=float(scene.lead_vertices[0].x);
-  msgcom[61]=float(scene.lead_vertices[0].y);
-  msgcom[62]=float(scene.lead_vertices[1].x);
-  msgcom[63]=float(scene.lead_vertices[1].y);
+
   msgcom[64]=float(scene.lane_blindspot_probs[0]);
   msgcom[65]=float(scene.lane_blindspot_probs[1]);
   msgcom[66]=float(scene.lane_line_probs[0]);
@@ -747,6 +750,7 @@ static void ui_draw_vision_speed(UIState *s) {
   msgcom[68]=float(scene.lane_line_probs[2]);
   msgcom[69]=float(scene.lane_line_probs[3]);
 
+  /*
   msgcom[70]=float(scene.track_vertices.cnt);
   for(int i=0;i<scene.track_vertices.cnt;i++){
     msgcom[71+i*2]=float(scene.track_vertices.v[i].x);
@@ -761,7 +765,7 @@ static void ui_draw_vision_speed(UIState *s) {
       msgcom[base + 1 + i * 2]     = scene.lane_line_vertices[n].v[i].x;
       msgcom[base + 1 + i * 2 + 1] = scene.lane_line_vertices[n].v[i].y;
     }
-  }
+  }*/
   //msgcom[739]까지 데이타 받고 있음
 
   

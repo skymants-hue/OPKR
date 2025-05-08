@@ -128,6 +128,22 @@ static void update_model(UIState *s, const cereal::ModelDataV2::Reader &model) {
     update_line_data(s, lane_lines[i], 0.025 * scene.lane_line_probs[i], 0, &scene.lane_line_vertices[i], max_idx);
   }
 
+  // update lane lines(3d) for udp
+  for (int n = 0; n < 4; n++) {
+    const auto &line = lane_lines[n];
+    const auto x_list = line.getX();
+    const auto y_list = line.getY();
+    int cnt = x_list.size();
+  
+    int base = 204 + n * 134; // 204, 338, 472, 606
+    msgcom[base] = float(cnt);  // 점 개수 저장
+  
+    for (int i = 0; i < cnt; i++) {
+      msgcom[base + 1 + i * 2]     = x_list[i];  // 3D X (calib frame)
+      msgcom[base + 1 + i * 2 + 1] = y_list[i];  // 3D Y (calib frame)
+    }
+  }
+
   // update road edges
   const auto road_edges = model.getRoadEdges();
   const auto road_edge_stds = model.getRoadEdgeStds();
@@ -144,6 +160,18 @@ static void update_model(UIState *s, const cereal::ModelDataV2::Reader &model) {
   }
   max_idx = get_path_length_idx(model_position, max_distance);
   update_line_data(s, model_position, 0.9, 1.22, &scene.track_vertices, max_idx);
+
+ // update path(3d) for udp
+  const auto x_list1 = model_position.getX();
+  const auto y_list1 = model_position.getY();
+  int cnt1 = x_list1.size();
+
+  msgcom[70] = float(cnt1);  // 점 개수
+
+  for (int i = 0; i < cnt1; i++) {
+    msgcom[71 + i * 2]     = x_list1[i];  // X (forward)
+    msgcom[71 + i * 2 + 1] = y_list1[i];  // Y (left-right)
+  }
 
    // update blindspot line
   for (int i = 0; i < std::size(scene.lane_blindspot_vertices); i++) {
