@@ -256,17 +256,17 @@ static void ui_draw_world(UIState *s) {
   if (true) {
     auto lead_one = (*s->sm)["radarState"].getRadarState().getLeadOne();
     auto lead_two = (*s->sm)["radarState"].getRadarState().getLeadTwo();
+    msgcom[58]=float(lead_one.getStatus());
+    msgcom[60]=float(lead_one.getYRel());
+    msgcom[61]=float(lead_one.getDRel());
+    msgcom[59]=float(lead_two.getStatus());
+    msgcom[62]=float(lead_two.getYRel());
+    msgcom[63]=float(lead_two.getDRel());
     if (lead_one.getStatus()) {
       draw_lead(s, lead_one, s->scene.lead_vertices[0]);
-      msgcom[58]=float(lead_one.getStatus());
-      msgcom[60]=float(lead_one.getYRel());
-      msgcom[61]=float(lead_one.getDRel());
     }
     if (lead_two.getStatus() && (std::abs(lead_one.getDRel() - lead_two.getDRel()) > 3.0)) {
       draw_lead(s, lead_two, s->scene.lead_vertices[1]);
-      msgcom[59]=float(lead_two.getStatus());
-      msgcom[62]=float(lead_two.getYRel());
-      msgcom[63]=float(lead_two.getDRel());
     }
     if (s->scene.stop_line && s->scene.longitudinalPlan.stopline[12] > 3.0) {
       auto stop_line = (*s->sm)["modelV2"].getModelV2().getStopLine();
