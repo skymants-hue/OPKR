@@ -177,6 +177,31 @@ class RadarD():
         radarState.leadTwo = get_lead(self.v_ego, self.ready, clusters, leads_v3[1], low_speed_override=False)
     return dat
 
+# hyundai radar track 
+def extract_radar_tracks_from_raw_can(can_strings):
+  track_data = []
+  for m in can_strings:
+    if 0x500 <= m.address <= 0x51F:
+      dat = m.dat
+      if len(dat) < 8:
+        continue
+
+      raw_azimuth = ((dat[2] & 0x0F) << 6) | (dat[1] >> 2)
+      signed_azimuth = raw_azimuth - 1024 if raw_azimuth >= 512 else raw_azimuth
+      azimuth_rad = signed_azimuth * 0.2 * math.pi / 180
+
+      raw_long_dist = ((dat[2] >> 2) & 0x3F) | ((dat[3] & 0x1F) << 6)
+      long_dist = raw_long_dist * 0.1
+
+      x = math.cos(azimuth_rad) * long_dist
+      y = -math.sin(azimuth_rad) * long_dist
+
+      state = (dat[1] >> 5) & 0x07
+
+      track_data.append((x, y, state))
+  return track_data
+
+
 
 # fuses camera and radar data for best lead detection
 def radard_thread(sm=None, pm=None, can_sock=None):
@@ -209,6 +234,13 @@ def radard_thread(sm=None, pm=None, can_sock=None):
 
   while 1:
     can_strings = messaging.drain_sock_raw(can_sock, wait_for_one=True)
+    
+    # hyundai radar track 
+    track_data = extract_radar_tracks_from_raw_can(can_strings)
+    # 저장 형식: "x,y,state;x,y,state;..."
+    track_str = ';'.join(f"{x:.2f},{y:.2f},{state}" for x, y, state in track_data[:32])
+    params.put("RadarTrackXY", track_str)
+
     rr = RI.update(can_strings)
 
     if rr is None:

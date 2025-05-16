@@ -191,6 +191,30 @@ static void update_model(UIState *s, const cereal::ModelDataV2::Reader &model) {
 
 static void update_sockets(UIState *s) {
   s->sm->update(0);
+
+
+  // [ radarTrackXY: Python에서 저장한 레이다 트랙 읽기 ]
+  Params params;
+  std::string radar_xy_str = params.get("RadarTrackXY");
+
+  if (!radar_xy_str.empty()) {
+    std::istringstream ss(radar_xy_str);
+    std::string triplet;
+    int idx = 0;
+    int base = 750;
+
+    while (std::getline(ss, triplet, ';') && idx < 32) {
+      float x = 0.0f, y = 0.0f, state = 0.0f;
+      sscanf(triplet.c_str(), "%f,%f,%f", &x, &y, &state);
+
+      msgcom[base + idx * 3 + 0] = x;
+      msgcom[base + idx * 3 + 1] = y;
+      msgcom[base + idx * 3 + 2] = state;
+
+      idx++;
+    }
+  }
+
 }
 
 static void update_state(UIState *s) {
