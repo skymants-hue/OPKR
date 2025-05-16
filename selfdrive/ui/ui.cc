@@ -191,7 +191,7 @@ static void update_model(UIState *s, const cereal::ModelDataV2::Reader &model) {
 
 static void update_sockets(UIState *s) {
   s->sm->update(0);
-  /*
+  
   constexpr int radar_base = 750;
   constexpr int max_tracks = 32;
   constexpr int expected_bus = 1;
@@ -221,7 +221,7 @@ static void update_sockets(UIState *s) {
         msgcom[radar_base + idx * 3 + 2] = (float)state;
       }
     }
-  }*/
+  }
 }
 
 static void update_state(UIState *s) {
@@ -741,7 +741,7 @@ QUIState::QUIState(QObject *parent) : QObject(parent) {
   ui_state.sm = std::make_unique<SubMaster, const std::initializer_list<const char *>>({
     "modelV2", "controlsState", "liveCalibration", "radarState", "deviceState", "roadCameraState",
     "pandaStates", "carParams", "driverMonitoringState", "sensorEvents", "carState", "liveLocationKalman",
-    "ubloxGnss", "gpsLocationExternal", "liveParameters", "lateralPlan", "liveNaviData",  "liveENaviData","liveMapData", "longitudinalPlan",
+    "ubloxGnss", "gpsLocationExternal", "liveParameters", "lateralPlan", "liveNaviData",  "liveENaviData","liveMapData", "longitudinalPlan","can",
   });
 
   Params params;
