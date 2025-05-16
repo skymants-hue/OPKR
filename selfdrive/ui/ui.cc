@@ -191,37 +191,6 @@ static void update_model(UIState *s, const cereal::ModelDataV2::Reader &model) {
 
 static void update_sockets(UIState *s) {
   s->sm->update(0);
-  
-  constexpr int radar_base = 750;
-  constexpr int max_tracks = 32;
-  constexpr int expected_bus = 1;
-  
-  if (s->sm->updated("can")) {
-  const auto &can_msgs = (*s->sm)["can"].getCan();
-    for (const auto &m : can_msgs) {
-      uint32_t addr = m.getAddress();
-      int src = m.getSrc();
-      auto dat = m.getDat();
-
-      if (addr >= 0x500 && addr <= 0x51F && src == expected_bus) {
-        int idx = addr - 0x500;
-        if (idx < 0 || idx >= max_tracks || dat.size() < 8) continue;
-
-        uint16_t raw_azimuth = ((dat[2] & 0x0F) << 6) | (dat[1] >> 2);
-        int16_t signed_azimuth = (raw_azimuth >= 512) ? (raw_azimuth - 1024) : raw_azimuth;
-        float azimuth = signed_azimuth * 0.2f;
-
-        uint16_t raw_long_dist = ((dat[2] >> 2) & 0x3F) | ((dat[3] & 0x1F) << 6);
-        float long_dist = raw_long_dist * 0.1f;
-
-        uint8_t state = (dat[1] >> 5) & 0x07;
-
-        msgcom[radar_base + idx * 3 + 0] = azimuth;
-        msgcom[radar_base + idx * 3 + 1] = long_dist;
-        msgcom[radar_base + idx * 3 + 2] = (float)state;
-      }
-    }
-  }
 }
 
 static void update_state(UIState *s) {
@@ -741,7 +710,7 @@ QUIState::QUIState(QObject *parent) : QObject(parent) {
   ui_state.sm = std::make_unique<SubMaster, const std::initializer_list<const char *>>({
     "modelV2", "controlsState", "liveCalibration", "radarState", "deviceState", "roadCameraState",
     "pandaStates", "carParams", "driverMonitoringState", "sensorEvents", "carState", "liveLocationKalman",
-    "ubloxGnss", "gpsLocationExternal", "liveParameters", "lateralPlan", "liveNaviData",  "liveENaviData","liveMapData", "longitudinalPlan","can",
+    "ubloxGnss", "gpsLocationExternal", "liveParameters", "lateralPlan", "liveNaviData",  "liveENaviData","liveMapData", "longitudinalPlan",
   });
 
   Params params;
