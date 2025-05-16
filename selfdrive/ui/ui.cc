@@ -197,7 +197,7 @@ static void update_sockets(UIState *s) {
   constexpr int expected_bus = 1;
 
   if (s->sm->updated("can")) {
-  auto can_msgs = s->sm->get("can").getCan();
+  const auto &can_msgs = (*s->sm)["can"].getCan();
     for (const auto &m : can_msgs) {
       uint32_t addr = m.getAddress();
       int src = m.getSrc();
@@ -207,16 +207,13 @@ static void update_sockets(UIState *s) {
         int idx = addr - 0x500;
         if (idx < 0 || idx >= max_tracks || dat.size() < 8) continue;
 
-        // AZIMUTH: 10bit signed, little endian (bit 12~21)
         uint16_t raw_azimuth = ((dat[2] & 0x0F) << 6) | (dat[1] >> 2);
         int16_t signed_azimuth = (raw_azimuth >= 512) ? (raw_azimuth - 1024) : raw_azimuth;
         float azimuth = signed_azimuth * 0.2f;
 
-        // LONG_DIST: 11bit unsigned, little endian (bit 18~28)
         uint16_t raw_long_dist = ((dat[2] >> 2) & 0x3F) | ((dat[3] & 0x1F) << 6);
         float long_dist = raw_long_dist * 0.1f;
 
-        // STATE: 3bit (bit 15~17)
         uint8_t state = (dat[1] >> 5) & 0x07;
 
         msgcom[radar_base + idx * 3 + 0] = azimuth;
