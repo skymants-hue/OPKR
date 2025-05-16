@@ -191,11 +191,11 @@ static void update_model(UIState *s, const cereal::ModelDataV2::Reader &model) {
 
 static void update_sockets(UIState *s) {
   s->sm->update(0);
-
+  /*
   constexpr int radar_base = 750;
   constexpr int max_tracks = 32;
   constexpr int expected_bus = 1;
-
+  
   if (s->sm->updated("can")) {
   const auto &can_msgs = (*s->sm)["can"].getCan();
     for (const auto &m : can_msgs) {
@@ -221,7 +221,7 @@ static void update_sockets(UIState *s) {
         msgcom[radar_base + idx * 3 + 2] = (float)state;
       }
     }
-  }
+  }*/
 }
 
 static void update_state(UIState *s) {
