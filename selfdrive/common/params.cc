@@ -400,6 +400,8 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"CruiseSetwithRoadLimitSpeedOffset", PERSISTENT},
     {"OPKRDebug", PERSISTENT},
     {"SetSpeedFive", PERSISTENT},
+    {"RadarTrackXY", CLEAR_ON_MANAGER_START},  // ✅ 커스텀 키 등록
+
 };
 
 } // namespace
