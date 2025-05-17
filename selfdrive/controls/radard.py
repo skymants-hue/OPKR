@@ -12,7 +12,7 @@ from selfdrive.controls.lib.cluster.fastcluster_py import cluster_points_centroi
 from selfdrive.controls.lib.radar_helpers import Cluster, Track, RADAR_TO_CAMERA
 from selfdrive.swaglog import cloudlog
 from selfdrive.hardware import TICI
-
+from selfdrive.car.hyundai.radar_interface import get_radar_track_can_parser
 
 class KalmanParams():
   def __init__(self, dt):
@@ -177,47 +177,6 @@ class RadarD():
         radarState.leadTwo = get_lead(self.v_ego, self.ready, clusters, leads_v3[1], low_speed_override=False)
     return dat
 
-# hyundai radar track 
-def extract_radar_tracks_from_raw_can(can_strings):
-    track_data = []
-
-    for m in can_strings:
-        try:
-            # ✅ dict인지 확인해서 key로 접근
-            addr = m['address']
-            dat = m['dat']
-
-            if not (0x500 <= addr <= 0x51F):
-                continue
-            if len(dat) < 8:
-                continue
-
-            # ✅ azimuth: 10bit signed, in degrees → radians
-            raw_azimuth = ((dat[2] & 0x0F) << 6) | (dat[1] >> 2)
-            signed_azimuth = raw_azimuth - 1024 if raw_azimuth >= 512 else raw_azimuth
-            azimuth_rad = signed_azimuth * 0.2 * math.pi / 180  # deg → rad
-
-            # ✅ long distance
-            raw_long_dist = ((dat[2] >> 2) & 0x3F) | ((dat[3] & 0x1F) << 6)
-            long_dist = raw_long_dist * 0.1
-
-            # ✅ x, y 좌표 계산 (좌표계 기준: x 전방, y 좌우)
-            x = math.cos(azimuth_rad) * long_dist
-            y = -math.sin(azimuth_rad) * long_dist
-
-            # ✅ 상태값
-            state = (dat[1] >> 5) & 0x07
-
-            track_data.append((x, y, state))
-
-        except Exception as e:
-            # ✅ 예외 발생 시 무시하고 로그만 출력
-            print(f"[WARN] 잘못된 CAN 메시지 무시됨: {m}, 에러: {e}")
-            continue
-
-    return track_data
-
-
 
 # fuses camera and radar data for best lead detection
 def radard_thread(sm=None, pm=None, can_sock=None):
@@ -227,6 +186,9 @@ def radard_thread(sm=None, pm=None, can_sock=None):
   cloudlog.info("radard is waiting for CarParams")
   CP = car.CarParams.from_bytes(Params().get("CarParams", block=True))
   cloudlog.info("radard got CarParams")
+
+  # radartrack xy parser for hyundai
+  radar_parser = get_radar_track_can_parser(CP)  # ✅ 1. 여기에 추가
 
   # import the radar from the fingerprint
   cloudlog.info("radard is importing %s", CP.carName)
@@ -248,13 +210,28 @@ def radard_thread(sm=None, pm=None, can_sock=None):
   # TODO: always log leads once we can hide them conditionally
   enable_lead = CP.openpilotLongitudinalControl or not CP.radarOffCan
 
+  # radartrack xy to save
   params = Params() 
 
   while 1:
     can_strings = messaging.drain_sock_raw(can_sock, wait_for_one=True)
     
-    # hyundai radar track 
-    track_data = extract_radar_tracks_from_raw_can(can_strings)
+    # hyundai radar track # ✅ radar_parser가 있다면 track 정보 추출
+    track_data = []
+    if radar_parser:
+      radar_parser.update_strings(can_strings)  # ✅ 2. 파싱 수행
+
+      for addr in range(0x500, 0x520):
+        msg = radar_parser.vl.get(f"RADAR_TRACK_{addr:x}")
+        if not msg:
+          continue
+        state = msg.get('STATE', 0)
+        if state in (3, 4):
+          azimuth = math.radians(msg['AZIMUTH'])
+          dist = msg['LONG_DIST']
+          x = math.cos(azimuth) * dist
+          y = -math.sin(azimuth) * dist
+          track_data.append((x, y, state))
     # 저장 형식: "x,y,state;x,y,state;..."
     track_str = ';'.join(f"{x:.2f},{y:.2f},{state}" for x, y, state in track_data[:32])
     params.put("RadarTrackXY", track_str)
