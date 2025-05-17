@@ -179,27 +179,43 @@ class RadarD():
 
 # hyundai radar track 
 def extract_radar_tracks_from_raw_can(can_strings):
-  track_data = []
-  for m in can_strings:
-    if 0x500 <= m.address <= 0x51F:
-      dat = m.dat
-      if len(dat) < 8:
-        continue
+    track_data = []
 
-      raw_azimuth = ((dat[2] & 0x0F) << 6) | (dat[1] >> 2)
-      signed_azimuth = raw_azimuth - 1024 if raw_azimuth >= 512 else raw_azimuth
-      azimuth_rad = signed_azimuth * 0.2 * math.pi / 180
+    for m in can_strings:
+        try:
+            # ✅ dict인지 확인해서 key로 접근
+            addr = m['address']
+            dat = m['dat']
 
-      raw_long_dist = ((dat[2] >> 2) & 0x3F) | ((dat[3] & 0x1F) << 6)
-      long_dist = raw_long_dist * 0.1
+            if not (0x500 <= addr <= 0x51F):
+                continue
+            if len(dat) < 8:
+                continue
 
-      x = math.cos(azimuth_rad) * long_dist
-      y = -math.sin(azimuth_rad) * long_dist
+            # ✅ azimuth: 10bit signed, in degrees → radians
+            raw_azimuth = ((dat[2] & 0x0F) << 6) | (dat[1] >> 2)
+            signed_azimuth = raw_azimuth - 1024 if raw_azimuth >= 512 else raw_azimuth
+            azimuth_rad = signed_azimuth * 0.2 * math.pi / 180  # deg → rad
 
-      state = (dat[1] >> 5) & 0x07
+            # ✅ long distance
+            raw_long_dist = ((dat[2] >> 2) & 0x3F) | ((dat[3] & 0x1F) << 6)
+            long_dist = raw_long_dist * 0.1
 
-      track_data.append((x, y, state))
-  return track_data
+            # ✅ x, y 좌표 계산 (좌표계 기준: x 전방, y 좌우)
+            x = math.cos(azimuth_rad) * long_dist
+            y = -math.sin(azimuth_rad) * long_dist
+
+            # ✅ 상태값
+            state = (dat[1] >> 5) & 0x07
+
+            track_data.append((x, y, state))
+
+        except Exception as e:
+            # ✅ 예외 발생 시 무시하고 로그만 출력
+            print(f"[WARN] 잘못된 CAN 메시지 무시됨: {m}, 에러: {e}")
+            continue
+
+    return track_data
 
 
 
