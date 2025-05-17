@@ -248,6 +248,8 @@ def radard_thread(sm=None, pm=None, can_sock=None):
   # TODO: always log leads once we can hide them conditionally
   enable_lead = CP.openpilotLongitudinalControl or not CP.radarOffCan
 
+  params = Params() 
+
   while 1:
     can_strings = messaging.drain_sock_raw(can_sock, wait_for_one=True)
     
