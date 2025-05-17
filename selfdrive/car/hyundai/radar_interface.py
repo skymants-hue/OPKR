@@ -47,8 +47,7 @@ def get_radar_can_parser(CP):
     return CANParser(DBC[CP.carFingerprint]['pt'], signals, checks, CP.sccBus)
 
 def get_radar_track_can_parser(CP):
-  if DBC[CP.carFingerprint]['radar'] is None:
-    return None
+  radar_dbc = "hyundai_kia_mando_front_radar"  # ✅ radar만 강제로 이걸 사용
 
   signals = []
   checks = []
@@ -64,7 +63,7 @@ def get_radar_track_can_parser(CP):
     ]
     checks += [(msg, 50)]  # 20Hz 정도면 충분
 
-  return CANParser(DBC[CP.carFingerprint]['radar'], signals, checks, CP.sccBus)
+  return CANParser(radar_dbc, signals, checks, bus=1)
 
 class RadarInterface(RadarInterfaceBase):
   def __init__(self, CP):
