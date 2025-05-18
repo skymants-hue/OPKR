@@ -226,12 +226,12 @@ def radard_thread(sm=None, pm=None, can_sock=None):
         if not msg:
           continue
         state = msg.get('STATE', 0)
-        if state in (3, 4):
-          azimuth = math.radians(msg['AZIMUTH'])
-          dist = msg['LONG_DIST']
-          x = math.cos(azimuth) * dist
-          y = -math.sin(azimuth) * dist
-          track_data.append((x, y, state))
+        #if state in (3, 4):
+        azimuth = math.radians(msg['AZIMUTH'])
+        dist = msg['LONG_DIST']
+        x = math.cos(azimuth) * dist
+        y = -math.sin(azimuth) * dist
+        track_data.append((x, y, state))
     # 저장 형식: "x,y,state;x,y,state;..."
     track_str = ';'.join(f"{x:.2f},{y:.2f},{state}" for x, y, state in track_data[:32])
     params.put("RadarTrackXY", track_str)
