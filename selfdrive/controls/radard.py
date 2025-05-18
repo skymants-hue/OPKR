@@ -225,7 +225,7 @@ def radard_thread(sm=None, pm=None, can_sock=None):
         msg = radar_parser.vl.get(f"RADAR_TRACK_{addr:x}")
         if not msg:
           continue
-        state = msg.get('STATE', 0)
+        state = msg.get('STATE', -2)
         #if state in (3, 4):
         azimuth = math.radians(msg['AZIMUTH'])
         dist = msg['LONG_DIST']
