@@ -63,7 +63,7 @@ def get_radar_track_can_parser(CP):
     ]
     checks += [(msg, 50)]  # 20Hz 정도면 충분
 
-  return CANParser(radar_dbc, signals, checks, 1)
+  return CANParser(radar_dbc, signals, checks, 0)
 
 class RadarInterface(RadarInterfaceBase):
   def __init__(self, CP):
