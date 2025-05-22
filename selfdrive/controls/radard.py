@@ -13,6 +13,7 @@ from selfdrive.controls.lib.radar_helpers import Cluster, Track, RADAR_TO_CAMERA
 from selfdrive.swaglog import cloudlog
 from selfdrive.hardware import TICI
 from selfdrive.car.hyundai.radar_interface import get_radar_track_can_parser
+import messaging
 
 class KalmanParams():
   def __init__(self, dt):
@@ -177,6 +178,14 @@ class RadarD():
         radarState.leadTwo = get_lead(self.v_ego, self.ready, clusters, leads_v3[1], low_speed_override=False)
     return dat
 
+def find_first_active_address_on_bus1(can_strings):
+    for cs in can_strings:
+        for m in cs.can:
+            if m.src != 1:
+                continue
+            if len(m.dat) > 0 and m.dat[0] != 0:
+                return m.address
+    return -1  # 못 찾은 경우
 
 # fuses camera and radar data for best lead detection
 def radard_thread(sm=None, pm=None, can_sock=None):
@@ -215,7 +224,7 @@ def radard_thread(sm=None, pm=None, can_sock=None):
 
   while 1:
     can_strings = messaging.drain_sock_raw(can_sock, wait_for_one=True)
-    
+    active_addr = find_first_active_address_on_bus1(can_strings)
     # hyundai radar track # ✅ radar_parser가 있다면 track 정보 추출
     track_data = []
     if radar_parser:
@@ -225,7 +234,8 @@ def radard_thread(sm=None, pm=None, can_sock=None):
         msg = radar_parser.vl.get(f"RADAR_TRACK_{addr:x}")
         if not msg:
           continue
-        state = msg.get('STATE', -2)
+        #state = msg.get('STATE', -2)
+        state = active_addr
         #if state in (3, 4):
         azimuth = math.radians(msg['AZIMUTH'])
         dist = msg['LONG_DIST']
