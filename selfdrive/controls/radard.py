@@ -13,7 +13,6 @@ from selfdrive.controls.lib.radar_helpers import Cluster, Track, RADAR_TO_CAMERA
 from selfdrive.swaglog import cloudlog
 from selfdrive.hardware import TICI
 from selfdrive.car.hyundai.radar_interface import get_radar_track_can_parser
-import messaging
 
 class KalmanParams():
   def __init__(self, dt):
