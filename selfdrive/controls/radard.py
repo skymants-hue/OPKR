@@ -223,7 +223,8 @@ def radard_thread(sm=None, pm=None, can_sock=None):
 
   while 1:
     can_strings = messaging.drain_sock_raw(can_sock, wait_for_one=True)
-    active_addr = find_first_active_address_on_bus1(can_strings)
+    can_strings1 = messaging.drain_sock(can_sock, wait_for_one=True)
+    active_addr = find_first_active_address_on_bus1(can_strings1)
     # hyundai radar track # ✅ radar_parser가 있다면 track 정보 추출
     track_data = []
     if radar_parser:
