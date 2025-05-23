@@ -192,7 +192,7 @@ static void update_model(UIState *s, const cereal::ModelDataV2::Reader &model) {
 static void update_sockets(UIState *s) {
   s->sm->update(0);
 
-
+  /*
   // [ radarTrackXY: Python에서 저장한 레이다 트랙 읽기 ]
   Params params;
   std::string radar_xy_str = params.get("RadarTrackXY");
@@ -214,6 +214,7 @@ static void update_sockets(UIState *s) {
       idx++;
     }
   }
+    */
 
 }
 

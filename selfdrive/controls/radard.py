@@ -196,7 +196,7 @@ def radard_thread(sm=None, pm=None, can_sock=None):
   cloudlog.info("radard got CarParams")
 
   # radartrack xy parser for hyundai
-  radar_parser = get_radar_track_can_parser(CP)  # ✅ 1. 여기에 추가
+  #radar_parser = get_radar_track_can_parser(CP)  # ✅ 1. 여기에 추가
 
   # import the radar from the fingerprint
   cloudlog.info("radard is importing %s", CP.carName)
@@ -223,9 +223,10 @@ def radard_thread(sm=None, pm=None, can_sock=None):
 
   while 1:
     can_strings = messaging.drain_sock_raw(can_sock, wait_for_one=True)
-    can_strings1 = messaging.drain_sock(can_sock, wait_for_one=True)
-    active_addr = find_first_active_address_on_bus1(can_strings1)
+    #can_strings1 = messaging.drain_sock(can_sock, wait_for_one=True)
+    #active_addr = find_first_active_address_on_bus1(can_strings1)
     # hyundai radar track # ✅ radar_parser가 있다면 track 정보 추출
+    """
     track_data = []
     if radar_parser:
       radar_parser.update_strings(can_strings)  # ✅ 2. 파싱 수행
@@ -234,8 +235,8 @@ def radard_thread(sm=None, pm=None, can_sock=None):
         msg = radar_parser.vl.get(f"RADAR_TRACK_{addr:x}")
         if not msg:
           continue
-        #state = msg.get('STATE', -2)
-        state = active_addr
+        state = msg.get('STATE', -2)
+        #state = active_addr
         #if state in (3, 4):
         azimuth = math.radians(msg['AZIMUTH'])
         dist = msg['LONG_DIST']
@@ -247,7 +248,7 @@ def radard_thread(sm=None, pm=None, can_sock=None):
     # 저장 형식: "x,y,state;x,y,state;..."
     track_str = ';'.join(f"{x:.2f},{y:.2f},{state}" for x, y, state in track_data[:32])
     params.put("RadarTrackXY", track_str)
-
+    """
     rr = RI.update(can_strings)
 
     if rr is None:
