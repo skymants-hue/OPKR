@@ -739,6 +739,13 @@ static void ui_draw_vision_speed(UIState *s) {
   msgcom[44]=float(scene.dm_active);
   msgcom[45]=float(scene.car_state.getSeatbeltUnlatched());
 
+  msgcom[47]=float(scene.car_state.getDoorOpen1());
+  msgcom[48]=float(scene.car_state.getDoorOpen2());
+  msgcom[49]=float(scene.car_state.getDoorOpen3());
+  msgcom[50]=float(scene.car_state.getDoorOpen4());
+
+
+
   msgcom[51]=float(scene.brakeHold);
 
 

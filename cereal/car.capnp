@@ -246,6 +246,12 @@ struct CarState {
   engineRpm @55 :Float32;
   chargeMeter @56 :Float32;
 
+  #APP
+  doorOpen1 @57 :Bool;
+  doorOpen2 @58 :Bool;
+  doorOpen3 @59 :Bool;
+  doorOpen4 @60 :Bool;
+
   struct TPMS {
     unit @0 :Int8;
     fl @1 :Float32;
