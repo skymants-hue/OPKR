@@ -251,9 +251,7 @@ struct CarState {
   doorOpen2 @58 :Bool;
   doorOpen3 @59 :Bool;
   doorOpen4 @60 :Bool;
-  lowLamp @61 :Bool;
-  fogLamp @62 :Bool;
-  highLamp @63 :Bool;
+  
 
   struct TPMS {
     unit @0 :Int8;
