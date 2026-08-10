@@ -254,10 +254,10 @@ struct CarState {
   lowLamp @61 :Bool;
   fogLamp @62 :Bool;
   highLamp @63 :Bool;
-  hoodSw @64 :Bool;
-  parkBrakeSw @65 :Bool;
+  hoodSw @64 :UInt8;
+  parkBrakeSw @65 :UInt8;
   astSeatBeltSw @66 :Bool;
-  trunkStat @67 :Bool;
+  trunkStat @67 :UInt8;
 
   struct TPMS {
     unit @0 :Int8;

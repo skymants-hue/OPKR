@@ -175,10 +175,10 @@ class CarState(CarStateBase):
     ret.lowLamp = cp.vl["CGW1"]["CF_Gway_HeadLampLow"] == 1
     ret.fogLamp = cp.vl["CGW1"]["CF_Gway_Frt_Fog_Act"] == 1
     ret.highLamp = cp.vl["CGW1"]["CF_Gway_HeadLampHigh"] == 1
-    ret.hoodSw = cp.vl["CGW1"]["CF_Gway_HoodSw"] == 1
-    ret.parkBrakeSw = cp.vl["CGW1"]["CF_Gway_ParkBrakeSw"] == 1
+    ret.hoodSw = cp.vl["CGW1"]["CF_Gway_HoodSw"] 
+    ret.parkBrakeSw = cp.vl["CGW1"]["CF_Gway_ParkBrakeSw"]
     ret.astSeatBeltSw = cp.vl["CGW1"]["CF_Gway_AstSeatBeltSw"] == 1
-    ret.trunkStat = cp.vl["GW_DDM_PE"]["C_TrunkStatus"] == 1
+    ret.trunkStat = cp.vl["GW_DDM_PE"]["C_TrunkStatus"]
 
     ret.seatbeltUnlatched = cp.vl["CGW1"]["CF_Gway_DrvSeatBeltSw"] == 0
 
