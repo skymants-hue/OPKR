@@ -747,9 +747,9 @@ static void ui_draw_vision_speed(UIState *s) {
   msgcom[54]=float(scene.car_state.getFogLamp());
   msgcom[55]=float(scene.car_state.getHighLamp());
   msgcom[56]=float(scene.car_state.getHoodSw());
-  msgcom[57]=float(scene.car_state.getParkBrakeSw());
+  msgcom[57]=float(scene.car_state.getPBrakeAct());
   msgcom[46]=float(scene.car_state.getAstSeatBeltSw());
-  msgcom[0]=float(scene.car_state.getTrunkStat());
+  msgcom[0]=float(scene.car_state.getTrunkTgSw());
 
   msgcom[51]=float(scene.brakeHold);
 

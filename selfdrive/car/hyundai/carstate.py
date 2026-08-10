@@ -175,10 +175,10 @@ class CarState(CarStateBase):
     ret.lowLamp = cp.vl["CGW1"]["CF_Gway_HeadLampLow"] == 1
     ret.fogLamp = cp.vl["CGW1"]["CF_Gway_Frt_Fog_Act"] == 1
     ret.highLamp = cp.vl["CGW1"]["CF_Gway_HeadLampHigh"] == 1
-    ret.hoodSw = cp.vl["CGW1"]["CF_Gway_HoodSw"] 
-    ret.parkBrakeSw = cp.vl["CGW1"]["CF_Gway_ParkBrakeSw"]
-    ret.astSeatBeltSw = cp.vl["CGW1"]["CF_Gway_AstSeatBeltSw"] == 1
-    ret.trunkStat = cp.vl["GW_DDM_PE"]["C_TrunkStatus"]
+    ret.hoodSw = cp.vl["CGW3"]["CF_Hoodsw_memory"] 
+    ret.pBrakeAct = cp.vl["TCS13"]["PBRAKE_ACT"] == 1
+    ret.astSeatBeltSw = cp.vl["CGW1"]["CF_Gway_AstSeatBeltSw"] == 0
+    ret.trunkTgSw = cp.vl["CGW1"]["CF_Gway_TrunkTgSw"]
 
     ret.seatbeltUnlatched = cp.vl["CGW1"]["CF_Gway_DrvSeatBeltSw"] == 0
 
@@ -444,9 +444,10 @@ class CarState(CarStateBase):
       ("CF_Gway_Frt_Fog_Act", "CGW1"),
       ("CF_Gway_HeadLampHigh", "CGW1"),
       ("CF_Gway_HoodSw", "CGW1"),
-      ("CF_Gway_ParkBrakeSw", "CGW1"),
+      ("CF_Hoodsw_memory", "CGW3"),
+      
       ("CF_Gway_AstSeatBeltSw", "CGW1"),
-      ("C_TrunkStatus", "GW_DDM_PE"),
+      ("CF_Gway_TrunkTgSw", "CGW1"),
 
 
       ("CF_Gway_TurnSigLh", "CGW1"),
