@@ -179,7 +179,7 @@ class CarState(CarStateBase):
     ret.pBrakeAct = cp.vl["TCS13"]["PBRAKE_ACT"] == 1
     ret.astSeatBeltSw = cp.vl["CGW1"]["CF_Gway_AstSeatBeltSw"] == 0
     ret.trunkTgSw = cp.vl["CGW1"]["CF_Gway_TrunkTgSw"]
-    if self.CP.sccBus in (1,2):
+    if self.CP.sccBus in (0,1,2):
       tracks = ret.initRadarTracks(32)
 
       for i in range(0x500, 0x520):
@@ -574,6 +574,18 @@ class CarState(CarStateBase):
       #("CGW3", 50),
       ("WHL_SPD11", 50)
     ]
+
+    #APP
+    if CP.sccBus == 0:
+      for i in range(0x500, 0x520):
+        msg = f"RADAR_TRACK_{i:03x}"
+        signals.extend([
+          ("AZIMUTH", msg),
+          ("STATE", msg),
+          ("LONG_DIST", msg),
+        ])
+        #checks.append((msg, 100))
+
     if CP.sccBus == 0 and CP.pcmCruise:
       checks += [
         ("SCC11", 50),
