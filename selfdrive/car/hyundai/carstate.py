@@ -571,7 +571,7 @@ class CarState(CarStateBase):
       ("CGW1", 10),
       ("CGW2", 5),
       ("CGW4", 5),
-      ("CGW3", 50),
+      #("CGW3", 50),
       ("WHL_SPD11", 50)
     ]
     if CP.sccBus == 0 and CP.pcmCruise:
@@ -679,7 +679,7 @@ class CarState(CarStateBase):
         ("STATE", msg),
         ("LONG_DIST", msg),
       ])
-      checks.append((msg, 100))
+      #checks.append((msg, 100))
 
     if CP.mdpsBus == 1:
       signals += [
