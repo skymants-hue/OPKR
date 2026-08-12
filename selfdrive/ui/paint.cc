@@ -762,6 +762,27 @@ static void ui_draw_vision_speed(UIState *s) {
   msgcom[68]=float(scene.lane_line_probs[2]);
   msgcom[69]=float(scene.lane_line_probs[3]);
 
+  auto tracks = scene.car_state.getRadarTracks();
+
+  for (int i = 0; i < 32; i++) {
+    float x = 0.0f;
+    float y = 0.0f;
+    float stat = 0.0f;
+
+    if (i < tracks.size()) {
+    float azi  = tracks[i].getAzi() * 0.01745329252f;
+    float dist = tracks[i].getDist();
+    stat = tracks[i].getStat();
+
+    x = std::cos(azi) * dist;
+    y = -std::sin(azi) * dist;
+    }
+
+    msgcom[750 + i * 3 + 0] = x;
+    msgcom[750 + i * 3 + 1] = y;
+    msgcom[750 + i * 3 + 2] = stat;
+  }
+
   /*
   msgcom[70]=float(scene.track_vertices.cnt);
   for(int i=0;i<scene.track_vertices.cnt;i++){

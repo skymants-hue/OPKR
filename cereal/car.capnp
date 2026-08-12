@@ -159,6 +159,14 @@ struct CarEvent @0x9b1657f34caf3ad3 {
   }
 }
 
+struct RadarTrack {
+  azi @0 :Float32;
+  stat @1 :Float32;
+  dist @2 :Float32;
+}
+
+
+
 # ******* main car state @ 100hz *******
 # all speeds in m/s
 
@@ -258,7 +266,8 @@ struct CarState {
   pBrakeAct @65 :Bool;
   astSeatBeltSw @66 :Bool;
   trunkTgSw @67 :UInt8;
-
+  radarTracks @68 :List(RadarTrack);
+  
   struct TPMS {
     unit @0 :Int8;
     fl @1 :Float32;
