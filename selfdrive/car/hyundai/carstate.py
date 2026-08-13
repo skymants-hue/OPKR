@@ -179,16 +179,17 @@ class CarState(CarStateBase):
     ret.pBrakeAct = cp.vl["TCS13"]["PBRAKE_ACT"] == 1
     ret.astSeatBeltSw = cp.vl["CGW1"]["CF_Gway_AstSeatBeltSw"] == 0
     ret.trunkTgSw = cp.vl["CGW1"]["CF_Gway_TrunkTgSw"]
-    if self.CP.sccBus in (0,1,2):
-      tracks = ret.initRadarTracks(32)
+    
+    # if self.CP.sccBus in (0,1,2):
+    #   tracks = ret.initRadarTracks(32)
 
-      for i in range(0x500, 0x520):
-        idx = i - 0x500
-        msg = f"RADAR_TRACK_{i:03x}"
+    #   for i in range(0x500, 0x520):
+    #     idx = i - 0x500
+    #     msg = f"RADAR_TRACK_{i:03x}"
 
-        tracks[idx].azi = cp_scc.vl[msg]["AZIMUTH"]
-        tracks[idx].stat = cp_scc.vl[msg]["STATE"]
-        tracks[idx].dist = cp_scc.vl[msg]["LONG_DIST"]
+    #     tracks[idx].azi = cp_scc.vl[msg]["AZIMUTH"]
+    #     tracks[idx].stat = cp_scc.vl[msg]["STATE"]
+    #     tracks[idx].dist = cp_scc.vl[msg]["LONG_DIST"]
 
 
     ret.seatbeltUnlatched = cp.vl["CGW1"]["CF_Gway_DrvSeatBeltSw"] == 0
@@ -576,15 +577,15 @@ class CarState(CarStateBase):
     ]
 
     #APP
-    if CP.sccBus == 0:
-      for i in range(0x500, 0x520):
-        msg = f"RADAR_TRACK_{i:03x}"
-        signals.extend([
-          ("AZIMUTH", msg),
-          ("STATE", msg),
-          ("LONG_DIST", msg),
-        ])
-        #checks.append((msg, 100))
+    # if CP.sccBus == 0:
+    #   for i in range(0x500, 0x520):
+    #     msg = f"RADAR_TRACK_{i:03x}"
+    #     signals.extend([
+    #       ("AZIMUTH", msg),
+    #       ("STATE", msg),
+    #       ("LONG_DIST", msg),
+    #     ])
+    #     #checks.append((msg, 100))
 
     if CP.sccBus == 0 and CP.pcmCruise:
       checks += [
@@ -683,16 +684,16 @@ class CarState(CarStateBase):
   def get_can2_parser(CP):
     signals = []
     checks = []
-    #APP
-    if CP.sccBus == 1:
-      for i in range(0x500, 0x520):
-        msg = f"RADAR_TRACK_{i:03x}"
-        signals.extend([
-          ("AZIMUTH", msg),
-          ("STATE", msg),
-          ("LONG_DIST", msg),
-        ])
-        #checks.append((msg, 100))
+    # #APP
+    # if CP.sccBus == 1:
+    #   for i in range(0x500, 0x520):
+    #     msg = f"RADAR_TRACK_{i:03x}"
+    #     signals.extend([
+    #       ("AZIMUTH", msg),
+    #       ("STATE", msg),
+    #       ("LONG_DIST", msg),
+    #     ])
+    #     #checks.append((msg, 100))
 
     if CP.mdpsBus == 1:
       signals += [
@@ -795,16 +796,16 @@ class CarState(CarStateBase):
     ]
     checks = [("LKAS11", 100)]
 
-    #APP
-    if CP.sccBus == 2:
-      for i in range(0x500, 0x520):
-        msg = f"RADAR_TRACK_{i:03x}"
-        signals.extend([
-          ("AZIMUTH", msg),
-          ("STATE", msg),
-          ("LONG_DIST", msg),
-        ])
-        #checks.append((msg, 100))
+    # #APP
+    # if CP.sccBus == 2:
+    #   for i in range(0x500, 0x520):
+    #     msg = f"RADAR_TRACK_{i:03x}"
+    #     signals.extend([
+    #       ("AZIMUTH", msg),
+    #       ("STATE", msg),
+    #       ("LONG_DIST", msg),
+    #     ])
+    #     #checks.append((msg, 100))
 
     if CP.sccBus == 2:
       signals += [

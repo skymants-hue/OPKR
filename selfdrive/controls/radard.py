@@ -223,32 +223,6 @@ def radard_thread(sm=None, pm=None, can_sock=None):
 
   while 1:
     can_strings = messaging.drain_sock_raw(can_sock, wait_for_one=True)
-    #can_strings1 = messaging.drain_sock(can_sock, wait_for_one=True)
-    #active_addr = find_first_active_address_on_bus1(can_strings1)
-    # hyundai radar track # ✅ radar_parser가 있다면 track 정보 추출
-    """
-    track_data = []
-    if radar_parser:
-      radar_parser.update_strings(can_strings)  # ✅ 2. 파싱 수행
-
-      for addr in range(0x500, 0x520):
-        msg = radar_parser.vl.get(f"RADAR_TRACK_{addr:x}")
-        if not msg:
-          continue
-        state = msg.get('STATE', -2)
-        #state = active_addr
-        #if state in (3, 4):
-        azimuth = math.radians(msg['AZIMUTH'])
-        dist = msg['LONG_DIST']
-        x = math.cos(azimuth) * dist
-        y = -math.sin(azimuth) * dist
-        #x=azimuth
-        #y=dist
-        track_data.append((x, y, state))
-    # 저장 형식: "x,y,state;x,y,state;..."
-    track_str = ';'.join(f"{x:.2f},{y:.2f},{state}" for x, y, state in track_data[:32])
-    params.put("RadarTrackXY", track_str)
-    """
     rr = RI.update(can_strings)
 
     if rr is None:

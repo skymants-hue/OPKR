@@ -159,11 +159,11 @@ struct CarEvent @0x9b1657f34caf3ad3 {
   }
 }
 
-struct RadarTrack {
-  azi @0 :Float32;
-  stat @1 :Float32;
-  dist @2 :Float32;
-}
+#struct RadarTrack {
+#  azi @0 :Float32;
+#  stat @1 :Float32;
+#  dist @2 :Float32;
+#}
 
 
 
@@ -254,7 +254,7 @@ struct CarState {
   engineRpm @55 :Float32;
   chargeMeter @56 :Float32;
 
-  #APP
+  # APP
   doorOpen1 @57 :Bool;
   doorOpen2 @58 :Bool;
   doorOpen3 @59 :Bool;
@@ -266,7 +266,7 @@ struct CarState {
   pBrakeAct @65 :Bool;
   astSeatBeltSw @66 :Bool;
   trunkTgSw @67 :UInt8;
-  radarTracks @68 :List(RadarTrack);
+  # radarTracks @68 :List(RadarTrack);
   
   struct TPMS {
     unit @0 :Int8;
