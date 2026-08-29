@@ -1,57 +1,90 @@
+#!/usr/bin/env python3
 import math
 
 from cereal import car
 from opendbc.can.parser import CANParser
-from openpilot.selfdrive.car.interfaces import RadarInterfaceBase
-from openpilot.selfdrive.car.hyundai.values import DBC
-from openpilot.selfdrive.car.hyundai.values import CANFD_CAR
-from openpilot.common.params import Params
+from selfdrive.car.interfaces import RadarInterfaceBase
+from selfdrive.car.hyundai.values import DBC
+from common.params import Params
 
 RADAR_START_ADDR = 0x500
 RADAR_MSG_COUNT = 32
 
-USE_RADAR_TRACK = Params().get_bool("UseRadarTrack") or (Params().get_bool("ExperimentalLongitudinalEnabled") and int(Params().get("OPKRLongAlt", encoding="utf8")) not in (1, 2))
-
-# POC for parsing corner radars: https://github.com/commaai/openpilot/pull/24221/
+USE_RADAR_TRACK = Params().get_bool("UseRadarTrack")
 
 def get_radar_can_parser(CP):
-  if USE_RADAR_TRACK or CP.carFingerprint in CANFD_CAR:
+  if USE_RADAR_TRACK:
     if DBC[CP.carFingerprint]['radar'] is None:
       return None
 
-    messages = [(f"RADAR_TRACK_{addr:x}", 50) for addr in range(RADAR_START_ADDR, RADAR_START_ADDR + RADAR_MSG_COUNT)]
-    return CANParser(DBC[CP.carFingerprint]['radar'], messages, 1)
+    signals = []
+    checks = []
 
+    for addr in range(RADAR_START_ADDR, RADAR_START_ADDR + RADAR_MSG_COUNT):
+      msg = f"RADAR_TRACK_{addr:x}"
+      signals += [
+        ("STATE", msg),
+        ("AZIMUTH", msg),
+        ("LONG_DIST", msg),
+        ("REL_ACCEL", msg),
+        ("REL_SPEED", msg),
+      ]
+      checks += [(msg, 50)]
+    return CANParser(DBC[CP.carFingerprint]['radar'], signals, checks, CP.sccBus)
   else:
-    messages = [
+    signals = [
+      # signal_name, signal_address
+      ("ObjValid", "SCC11"),
+      ("ACC_ObjStatus", "SCC11"),
+      ("ACC_ObjLatPos", "SCC11"),
+      ("ACC_ObjDist", "SCC11"),
+      ("ACC_ObjRelSpd", "SCC11"),
+    ]
+    checks = [
       # address, frequency
       ("SCC11", 50),
     ]
-    return CANParser(DBC[CP.carFingerprint]['pt'], messages, CP.sccBus)
+    return CANParser(DBC[CP.carFingerprint]['pt'], signals, checks, CP.sccBus)
 
+def get_radar_track_can_parser(CP):
+  radar_dbc = "hyundai_kia_mando_front_radar"  # ✅ radar만 강제로 이걸 사용
+
+  signals = []
+  checks = []
+
+  for addr in range(RADAR_START_ADDR, RADAR_START_ADDR + RADAR_MSG_COUNT):
+    msg = f"RADAR_TRACK_{addr:x}"
+    signals += [
+      ("STATE", msg),
+      ("AZIMUTH", msg),
+      ("LONG_DIST", msg),
+      ("REL_ACCEL", msg),
+      ("REL_SPEED", msg),
+    ]
+    checks += [(msg, 50)]  # 20Hz 정도면 충분
+
+  return CANParser(radar_dbc, signals, checks, 1)
 
 class RadarInterface(RadarInterfaceBase):
   def __init__(self, CP):
     super().__init__(CP)
-
-    self.CP = CP
     
-    if USE_RADAR_TRACK or self.CP.carFingerprint in CANFD_CAR:
+    if USE_RADAR_TRACK:
       self.updated_messages = set()
       self.trigger_msg = RADAR_START_ADDR + RADAR_MSG_COUNT - 1
       self.track_id = 0
 
-      self.radar_off_can = CP.radarUnavailable
+      self.radar_off_can = CP.radarOffCan
       self.rcp = get_radar_can_parser(CP)
     else:
       self.rcp = get_radar_can_parser(CP)
       self.updated_messages = set()
       self.trigger_msg = 0x420
       self.track_id = 0
-      self.radar_off_can = CP.radarUnavailable
+      self.radar_off_can = CP.radarOffCan
 
   def update(self, can_strings):
-    if USE_RADAR_TRACK or self.CP.carFingerprint in CANFD_CAR:
+    if USE_RADAR_TRACK:
       if self.radar_off_can or (self.rcp is None):
         return super().update(None)
     else:
@@ -72,7 +105,7 @@ class RadarInterface(RadarInterfaceBase):
   def _update(self, updated_messages):
     ret = car.RadarData.new_message()
 
-    if USE_RADAR_TRACK or self.CP.carFingerprint in CANFD_CAR:
+    if USE_RADAR_TRACK:
       if self.rcp is None:
         return ret
 
@@ -97,7 +130,7 @@ class RadarInterface(RadarInterfaceBase):
           self.pts[addr].dRel = math.cos(azimuth) * msg['LONG_DIST']
           self.pts[addr].yRel = 0.5 * -math.sin(azimuth) * msg['LONG_DIST']
           self.pts[addr].vRel = msg['REL_SPEED']
-          self.pts[addr].aRel = msg['REL_ACCEL']
+          self.pts[addr].aRel = msg['REL_ACCEL'] 
           self.pts[addr].yvRel = float('nan')
 
         else:
