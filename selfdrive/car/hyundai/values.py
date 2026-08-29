@@ -754,7 +754,7 @@ CHECKSUM = {
 
 FEATURES = {
   # Use Cluster for Gear Selection, rather than Transmission
-  "use_cluster_gears": {CAR.AVANTE_AD, CAR.KONA_OS, CAR.I30_PD, CAR.K7_YG, CAR.GRANDEUR_IG},
+  "use_cluster_gears": {CAR.AVANTE_AD, CAR.KONA_OS, CAR.I30_PD, CAR.K7_YG, CAR.GRANDEUR_IG, CAR.GRANDEUR_FL_IG},
   # Use TCU Message for Gear Selection
   "use_tcu_gears": {CAR.K5_JF, CAR.SONATA_LF, CAR.VELOSTER_JS, CAR.SONATA_TURBO_LF, CAR.STINGER_CK},
   # Use E_GEAR Message for Gear Selection
